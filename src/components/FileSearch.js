@@ -4,6 +4,8 @@
  * @创建时间 2024/4/12 星期五 下午 13:59
  */
 import React, {useState, useEffect, useRef} from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons'
 
 const FileSearch = ({title, onFileSearch}) => {
   const [inputActive, setInputActive] = useState(false);
@@ -49,45 +51,49 @@ const FileSearch = ({title, onFileSearch}) => {
 
   // 根据激活状态来区分两种显示框
   return (
-    <div className="alert alert-primary">
+    <div className="alert alert-primary d-flex justify-content-between align-items-center">
       {
         !inputActive && (
-          <div className="d-flex justify-content-between align-items-center">
+          <>
             <span>{title}</span>
             <button
               type="button"
-              className="btn btn-primary"
+              className="icon-button"
               onClick={() => {
                 setInputActive(true)
               }}
             >
-              搜索
+              <FontAwesomeIcon
+                title="搜索"
+                size="lg"
+                icon={faSearch}
+              />
             </button>
-          </div>
+          </>
         )
       }
       {
         inputActive && (
-          <div className="row">
-            {/*<div className="input-group">*/}
-              <div className="col-8">
-                <input
-                  className="form-control"
-                  value={value}
-                  ref={node}
-                  onChange={(e) => {
-                    setValue(e.target.value)
-                  }}
-                />
-              </div>
-              <button
-                type="button"
-                className="btn btn-primary col-4"
-                onClick={closeSearch}>
-                关闭
-              </button>
-            {/*</div>*/}
-          </div>
+          <>
+            <input
+              className="form-control"
+              value={value}
+              ref={node}
+              onChange={(e) => {
+                setValue(e.target.value)
+              }}
+            />
+            <button
+              type="button"
+              className="icon-button"
+              onClick={closeSearch}>
+              <FontAwesomeIcon
+                title="关闭"
+                size="lg"
+                icon={faTimes}
+              />
+            </button>
+          </>
         )
       }
     </div>

@@ -154,5 +154,18 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 ```
 
 
+## 为项目选择图标库
 
+- 使用 svg 图标库，而不是 font icon
+- 使用 fontawesome react
+
+```
+npm install --save @fortawesome/fontawesome-svg-core
+npm install --save @fortawesome/free-solid-svg-icons
+npm install --save @fortawesome/free-regular-svg-icons
+npm install --save @fortawesome/free-brands-svg-icons
+npm install --save @fortawesome/react-fontawesome
+```
+
+https://docs.fontawesome.com/web/setup/packages
 
