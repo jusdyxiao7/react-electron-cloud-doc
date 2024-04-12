@@ -169,3 +169,13 @@ npm install --save @fortawesome/react-fontawesome
 
 https://docs.fontawesome.com/web/setup/packages
 
+
+## 使用 PropTypes 检查属性类型
+
+
+- 类型检查可以帮助我们更好的发现 Bug
+- React 内置了 PropTypes 来完成这个任务 
+
+> main.afc48e79b3c4b64a3404.hot-update.js:36 Warning: Failed prop type: Invalid prop `title` of type `number` supplied to `FileSearch`, expected `string`.
+> at FileSearch (http://localhost:3000/static/js/bundle.js:195:3)
+> at App
