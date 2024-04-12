@@ -117,5 +117,38 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 ```
 
 
+注意直接写在input下的className会跟本身的 form-control 有冲突
+
+
+- 错误写法
+  - `className="form-control col-8"`
+
+- 正确写法
+  - `<div className="col-8"><input className="form-control" /></div>`
+
+
+```
+<div className="row">
+  <div className="col-8">
+    <input
+      className="form-control col-8"
+      value={value}
+      onChange={(e) => {
+        setValue(e.target.value)
+      }}
+    />
+  </div>
+  <button
+    type="button"
+    className="btn btn-primary col-4"
+    onClick={() => {
+      setInputActive(false)
+    }}>
+    关闭
+  </button>
+</div>
+```
+
+
 
 
