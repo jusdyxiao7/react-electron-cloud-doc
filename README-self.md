@@ -23,8 +23,14 @@ npm install electron --save-dev
 npm install electron-is-dev --save-dev
 ```
 
+
+## 标准的electron入口文件 main.js
+
+
 main.js
 
+
+```
 const { app, BrowserWindow } = require('electron')
 const isDev = require('electron-is-dev')
 let mainWindow
@@ -40,9 +46,13 @@ app.on('ready', () => {
   const urlLocation = isDev ? 'http://localhost:3000' : 'dummyurl'
   mainWindow.loadURL(urlLocation)
 })
+```
 
-main.js
+package.json 新增入口配置
+
+```
 "main": "main.js",
+```
 
 concurrently并发执行多个命令
 
@@ -60,10 +70,52 @@ npm install wait-on --save-dev
 npm install cross-env --save-dev
 ```
 
+package.json 新增组合启动命令
+
+```
 "dev": "concurrently \"wait-on http://localhost:3000 && electron .\" \"cross-env BROWSER=none npm start\""
+```
 
-components->ComponentName.js+ComponentName.css
-hooks->useHook.js
-utils
 
-无能的人
+### 环境搭建问题处理
+
+
+采用新版本的 electron-is-dev，无法正确引入，问题待修正
+
+> // 老版本使用下面的方式
+> const isDev = require('electron-is-dev')
+>
+> // 新版本使用方式
+> import isDev from 'electron-is-dev'
+
+
+新的引入方式，同样会导致两种js无法共存，处理办法暂无，待解决
+
+https://github.com/sindresorhus/electron-is-dev
+
+
+目录结构
+
+- components->ComponentName.js+ComponentName.css
+- hooks->useHook.js
+- utils
+
+
+
+## 引入Bootstrap样式库
+
+
+```
+npm install bootstrap --save
+```
+
+App.js 文件中引入的样式
+
+```
+// 引入bootstrap样式库文件
+import 'bootstrap/dist/css/bootstrap.min.css';
+```
+
+
+
+
