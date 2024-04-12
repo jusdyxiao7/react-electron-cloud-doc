@@ -11,6 +11,7 @@ function App() {
         <div className="col-3 left-panel">
           <FileSearch
           title='我的云文档'
+          onFileSearch={(value) => {console.log(value)}}
           />
         </div>
         <div className="col-9 bg-primary right-panel">

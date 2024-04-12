@@ -94,7 +94,11 @@ package.json 新增组合启动命令
 https://github.com/sindresorhus/electron-is-dev
 
 
-目录结构
+## 目录结构
+
+避免多层嵌套
+
+不要过度思考
 
 - components->ComponentName.js+ComponentName.css
 - hooks->useHook.js
