@@ -211,3 +211,24 @@ npm install node-sass --save
 https://www.npmjs.com/package/node-sass
 
 
+## Markdown编辑器
+
+https://www.tiny.cloud/
+
+基本要求
+
+- 支持预览模式
+- 支持高亮显示不同内容
+- 支持自定义工具栏
+
+Github上搜索相关仓库 => 再看下有没有fork后继续更新的
+
+开源精神
+
+最终选择
+
+https://github.com/RIP21/react-simplemde-editor
+
+```
+npm install --save react-simplemde-editor easymde
+```
