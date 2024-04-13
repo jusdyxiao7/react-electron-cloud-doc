@@ -6,16 +6,28 @@ import FileSearch from "./components/FileSearch";
 import FileList from "./components/FileList";
 import defaultFiles from "./utils/defaultFiles";
 import BottomBtn from "./components/BottomBtn";
-import { faPlus, faFileImport } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faFileImport, faSave } from '@fortawesome/free-solid-svg-icons'
 import TabList from "./components/TabList";
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
 import React, { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid';
 import {flattenArr, objToArr} from "./utils/helper";
+import fileHelper from "./utils/fileHelper";
 
-const fs = window.require('fs')
-console.dir(fs)
+
+// require node.js modules
+// const fs = window.require('fs')
+// console.dir(fs)
+const {join} = window.require('path')
+
+// 低版本中可以正常引入
+// const {remote} = window.require('electron')
+
+const remote = window.require('@electron/remote')
+// const remote = window.require('@electron/remote')
+console.log(remote)
+
 
 function App() {
 
@@ -27,6 +39,10 @@ function App() {
   const [openedFileIds, setOpenedFileIds] = useState([])
   const [unsavedFileIds, setUnsavedFileIds] = useState([])
   const [searchedFiles, setSearchedFiles] = useState([])
+
+  // electron保存的路径
+  const saveLocation = remote.app.getPath('documents')
+  // const saveLocation = 'documents'
 
   const openedFiles = openedFileIds.map(openId => {
     return files[openId]
@@ -99,7 +115,7 @@ function App() {
     tabClose(id)
   }
 
-  const updateFileName = (id, title) => {
+  const updateFileName = (id, title, isNew) => {
     // loop through files, and update the title
     // const newFiles = filesArr.map(file => {
     //   if (file.id === id) {
@@ -111,10 +127,17 @@ function App() {
     // })
     // setFiles(newFiles)
 
-
     const modifiedFile = { ...files[id], title, isNew: false}
-    setFiles({...files, [id]: modifiedFile})
-
+    if (isNew) {
+      console.log(saveLocation)
+      fileHelper.writeFile(join(saveLocation, `${title}.md`), files[id].body).then(() => {
+        setFiles({...files, [id]: modifiedFile})
+      })
+    } else {
+      fileHelper.renameFile(join(saveLocation, `${files[id].title}.md`), join(saveLocation, `${title}.md`)).then(() => {
+        setFiles({...files, [id]: modifiedFile})
+      })
+    }
   }
 
   const fileSearch = (keyword) => {
@@ -149,19 +172,25 @@ function App() {
 
   }
 
+  const saveCurrentFile = () => {
+    fileHelper.writeFile(join(saveLocation, `${activeFile.title}.md`), activeFile.body).then(() => {
+      setUnsavedFileIds(unsavedFileIds.filter(id => id !== activeFile.id))
+    })
+  }
+
   return (
     <div className="App container-fluid px-0">
       <div className="row g-0">
         <div className="col-3 bg-light left-panel ">
           <FileSearch
           title='我的云文档'
-          onFileSearch={(keyword) => {fileSearch(keyword)}}
+          onFileSearch={fileSearch}
           />
           <FileList
             files={fileListArr}
-            onSaveEdit={(id, title) => {updateFileName(id, title)}}
-            onFileClick={(id) => fileClick(id)}
-            onFileDelete={(id) => deleteFile(id)}
+            onSaveEdit={updateFileName}
+            onFileClick={fileClick}
+            onFileDelete={deleteFile}
           />
           <div className="row g-0 button-group">
             <div className="col">
@@ -214,6 +243,12 @@ function App() {
                     autofocus: true,
                     spellChecker: true,
                   }}
+              />
+              <BottomBtn
+                text="保存"
+                colorClass="btn-success"
+                icon={faSave}
+                onBtnClick={saveCurrentFile}
               />
             </>
           }

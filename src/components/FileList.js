@@ -33,7 +33,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         // 使用hooks函数重构精简代码，跟下方等价
         // 防止空名称也能保存
         if (enterPressed && editStatus && value.trim() !== '') {
-            onSaveEdit(editItem.id, value)
+            onSaveEdit(editItem.id, value, editItem.isNew)
             setEditStatus(false)
             setValue('')
         }

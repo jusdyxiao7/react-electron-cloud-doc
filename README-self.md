@@ -292,3 +292,47 @@ webPreferences: {
 ```
 
 https://github.com/reZach/secure-electron-template
+
+
+## 关于Electron中设置enableRemoteModule:true，渲染进程中依旧无法使用remote模块的问题
+
+
+低版本中 App.js 可以采用如下方式直接引入进来
+
+```
+// 低版本中可以正常引入
+const {remote} = window.require('electron')
+console.log(remote)
+
+const saveLocation = remote.app.getPath('documents')
+```
+
+高本本中需要额外处理
+
+
+1. 安装依赖
+
+```
+npm install @electron/remote --save
+```
+
+2. 主进程中开启 `enableRemoteModule: true`，同时在创建窗口后引入模块
+
+```
+require('@electron/remote/main').initialize()
+require('@electron/remote/main').enable(mainWindow.webContents)
+```
+
+3. 渲染进程中导入 remote 模块
+
+```
+const {remote} = window.require('@electron/remote')
+```
+
+
+## 数据持久化解决方案
+
+
+```
+npm install electron-store --save
+```

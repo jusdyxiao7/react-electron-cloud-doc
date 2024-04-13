@@ -24,9 +24,13 @@ app.on('ready', () => {
       nodeIntegration: true,
       webSecurity: false,
       // 解决window.require is not a function 问题
-      contextIsolation: false
+      contextIsolation: false,
+      enableRemoteModule: true,
     }
   })
+  // 开启remote模块
+  require('@electron/remote/main').initialize()
+  require('@electron/remote/main').enable(mainWindow.webContents)
   const urlLocation = isDev ? 'http://localhost:3000' : 'dummyUrl'
   mainWindow.loadURL(urlLocation);
 })
