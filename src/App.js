@@ -30,14 +30,33 @@ const remote = window.require('@electron/remote')
 
 const Store = window.require('electron-store')
 
-const store = new Store()
-store.set('name', 'viking')
-console.log(store.get('name'))
+// const store = new Store()
+// store.set('name', 'viking')
+// console.log(store.get('name'))
+
+const fileStore = new Store({'name': 'Files Data'})
+
+// 新建、更新、删除时操作即可
+const saveFilesToStore = (files) => {
+  // we don't have to store any info in file system, eg: isNew, body, etc...
+  const fileStoreObj = objToArr(files).reduce((result, file) => {
+    const {id, path, title, createdAt} = file
+    result[id] = {
+      id,
+      path,
+      title,
+      createdAt
+    }
+    return result
+  }, {})
+  fileStore.set('files', fileStoreObj)
+}
 
 
 function App() {
 
-  const [files, setFiles] = (useState(flattenArr(defaultFiles)))
+  // const [files, setFiles] = (useState(flattenArr(defaultFiles)))
+  const [files, setFiles] = (useState(fileStore.get('files') || {}))
   const filesArr = objToArr(files)
   // console.log(files)
   // console.log(filesArr)
@@ -112,13 +131,16 @@ function App() {
 
   const deleteFile = (id) => {
     // filter out the current file id
-    delete files[id]
-    setFiles(files)
+    fileHelper.deleteFile(files[id].path).then(() => {
+      delete files[id]
+      setFiles(files)
+      saveFilesToStore(files)
 
-    // const newFiles = files.filter(file => file.id !== id)
-    // setFiles(newFiles)
-    // close the tab if opened
-    tabClose(id)
+      // const newFiles = files.filter(file => file.id !== id)
+      // setFiles(newFiles)
+      // close the tab if opened
+      tabClose(id)
+    })
   }
 
   const updateFileName = (id, title, isNew) => {
@@ -133,15 +155,21 @@ function App() {
     // })
     // setFiles(newFiles)
 
-    const modifiedFile = { ...files[id], title, isNew: false}
+    const newPath = join(saveLocation, `${title}.md`)
+    const modifiedFile = { ...files[id], title, isNew: false, path: newPath}
+    const newFiles = {...files, [id]: modifiedFile}
+
     if (isNew) {
       console.log(saveLocation)
-      fileHelper.writeFile(join(saveLocation, `${title}.md`), files[id].body).then(() => {
-        setFiles({...files, [id]: modifiedFile})
+      fileHelper.writeFile(newPath, files[id].body).then(() => {
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
       })
     } else {
-      fileHelper.renameFile(join(saveLocation, `${files[id].title}.md`), join(saveLocation, `${title}.md`)).then(() => {
-        setFiles({...files, [id]: modifiedFile})
+      const oldPath = join(saveLocation, `${files[id].title}.md`)
+      fileHelper.renameFile(oldPath, newPath).then(() => {
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
       })
     }
   }
