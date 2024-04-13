@@ -14,6 +14,9 @@ import React, { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid';
 import {flattenArr, objToArr} from "./utils/helper";
 
+const fs = window.require('fs')
+console.dir(fs)
+
 function App() {
 
   const [files, setFiles] = (useState(flattenArr(defaultFiles)))

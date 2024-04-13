@@ -23,6 +23,8 @@ app.on('ready', () => {
     webPreferences: {
       nodeIntegration: true,
       webSecurity: false,
+      // 解决window.require is not a function 问题
+      contextIsolation: false
     }
   })
   const urlLocation = isDev ? 'http://localhost:3000' : 'dummyUrl'
