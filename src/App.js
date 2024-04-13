@@ -5,12 +5,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import FileSearch from "./components/FileSearch";
 import FileList from "./components/FileList";
 import defaultFiles from "./utils/defaultFiles";
+import BottomBtn from "./components/BottomBtn";
+import { faPlus, faFileImport } from '@fortawesome/free-solid-svg-icons'
 
 function App() {
   return (
-    <div className="App container-fluid">
-      <div className="row">
-        <div className="col-3 left-panel">
+    <div className="App container-fluid px-0">
+      <div className="row g-0">
+        <div className="col-3 bg-light left-panel ">
           <FileSearch
           title='我的云文档'
           onFileSearch={(value) => {console.log(value)}}
@@ -21,6 +23,22 @@ function App() {
             onFileClick={(id) => console.log('clicking', id)}
             onFileDelete={(id) => console.log('deleting', id)}
           />
+          <div className="row g-0">
+            <div className="col">
+              <BottomBtn
+               text="新建"
+               colorClass="btn-primary"
+               icon={faPlus}
+              />
+            </div>
+            <div className="col">
+              <BottomBtn
+               text="导入"
+               colorClass="btn-success"
+               icon={faFileImport}
+              />
+            </div>
+          </div>
         </div>
         <div className="col-9 bg-primary right-panel">
           <h1>this is the left</h1>
