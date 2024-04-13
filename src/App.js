@@ -15,7 +15,6 @@ import { v4 as uuidv4 } from 'uuid';
 import {flattenArr, objToArr} from "./utils/helper";
 import fileHelper from "./utils/fileHelper";
 
-
 // require node.js modules
 // const fs = window.require('fs')
 // console.dir(fs)
@@ -24,9 +23,16 @@ const {join} = window.require('path')
 // 低版本中可以正常引入
 // const {remote} = window.require('electron')
 
+// 高版本需要安装新依赖，并做相关配置后使用
 const remote = window.require('@electron/remote')
 // const remote = window.require('@electron/remote')
-console.log(remote)
+// console.log(remote)
+
+const Store = window.require('electron-store')
+
+const store = new Store()
+store.set('name', 'viking')
+console.log(store.get('name'))
 
 
 function App() {

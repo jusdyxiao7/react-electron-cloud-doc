@@ -336,3 +336,29 @@ const {remote} = window.require('@electron/remote')
 ```
 npm install electron-store --save
 ```
+
+
+## 渲染进程引入 electron-store 启动白屏问题
+
+
+低版本中可以直接在渲染进程中引入 electron-store
+
+高版本需要额外做如下处理
+
+1. 主进程 main.js 中引入，并开启
+
+```
+// 高版本引入 electron-store
+const Store = require('electron-store')
+Store.initRenderer()
+```
+
+2. 渲染进程 App.js 中引入使用即可
+
+```
+const Store = window.require('electron-store')
+
+const store = new Store()
+store.set('name', 'viking')
+console.log(store.get('name'))
+```

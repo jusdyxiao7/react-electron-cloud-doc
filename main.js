@@ -11,6 +11,11 @@ const { app, BrowserWindow } = require('electron')
 // 引入报错，import关键字不支持 => 待解决
 // import isDev from 'electron-is-dev'
 
+
+// 高版本引入 electron-store
+const Store = require('electron-store')
+Store.initRenderer()
+
 let mainWindow = null;
 
 const isDev = process.env.NODE_ENV !== 'production'
