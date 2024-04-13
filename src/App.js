@@ -12,20 +12,24 @@ import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
 import React, { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid';
+import {flattenArr, objToArr} from "./utils/helper";
 
 function App() {
 
-  const [files, setFiles] = useState(defaultFiles)
+  const [files, setFiles] = (useState(flattenArr(defaultFiles)))
+  const filesArr = objToArr(files)
+  // console.log(files)
+  // console.log(filesArr)
   const [activeFileId, setActiveFileId] = useState('')
   const [openedFileIds, setOpenedFileIds] = useState([])
   const [unsavedFileIds, setUnsavedFileIds] = useState([])
   const [searchedFiles, setSearchedFiles] = useState([])
 
   const openedFiles = openedFileIds.map(openId => {
-    return files.find(file => file.id === openId)
+    return files[openId]
   })
-  const activeFile = files.find(file => file.id === activeFileId)
-  const fileListArr = (searchedFiles.length > 0) ? searchedFiles : files
+  const activeFile = files[activeFileId]
+  const fileListArr = (searchedFiles.length > 0) ? searchedFiles : filesArr
   // console.log(files)
   // console.log(setSearchedFiles)
   // console.log(fileListArr)
@@ -59,13 +63,22 @@ function App() {
 
   const fileChange = (id, value) => {
     // loop through file array to update to new value
-    const newFiles = files.map(file => {
-      if (file.id === id) {
-        file.body = value
-      }
-      return file
-    })
-    setFiles(newFiles)
+    // const newFiles = filesArr.map(file => {
+    //   if (file.id === id) {
+    //     file.body = value
+    //   }
+    //   return file
+    // })
+    // setFiles(newFiles)
+
+
+    // state is immutable
+    // files[id].body = value
+
+
+    const newFile = { ...files[id], body: value}
+    setFiles({...files, [id]: newFile})
+
     // update unsavedIds
     if (!unsavedFileIds.includes(id)) {
       setUnsavedFileIds([...unsavedFileIds, id])
@@ -74,44 +87,63 @@ function App() {
 
   const deleteFile = (id) => {
     // filter out the current file id
-    const newFiles = files.filter(file => file.id !== id)
-    setFiles(newFiles)
+    delete files[id]
+    setFiles(files)
+
+    // const newFiles = files.filter(file => file.id !== id)
+    // setFiles(newFiles)
     // close the tab if opened
     tabClose(id)
   }
 
   const updateFileName = (id, title) => {
     // loop through files, and update the title
-    const newFiles = files.map(file => {
-      if (file.id === id) {
-        file.title = title
-        // 不设置的话会一直循环调用
-        file.isNew = false
-      }
-      return file
-    })
-    setFiles(newFiles)
+    // const newFiles = filesArr.map(file => {
+    //   if (file.id === id) {
+    //     file.title = title
+    //     // 不设置的话会一直循环调用
+    //     file.isNew = false
+    //   }
+    //   return file
+    // })
+    // setFiles(newFiles)
+
+
+    const modifiedFile = { ...files[id], title, isNew: false}
+    setFiles({...files, [id]: modifiedFile})
+
   }
 
   const fileSearch = (keyword) => {
     // filter out the new files based on the keyword
-    const newFiles = files.filter(file => file.title.includes(keyword))
+    const newFiles = filesArr.filter(file => file.title.includes(keyword))
     setSearchedFiles(newFiles)
   }
 
   const createNewFile = () => {
     const newId = uuidv4()
-    const newFiles = [
-        ...files,
-      {
-        id: newId,
-        title: '',
-        body: '## 请输出 Markdown',
-        createdAt: new Date().getTime(),
-        isNew: true
-      }
-    ]
-    setFiles(newFiles)
+    // const newFiles = [
+    //     ...filesArr,
+    //   {
+    //     id: newId,
+    //     title: '',
+    //     body: '## 请输出 Markdown',
+    //     createdAt: new Date().getTime(),
+    //     isNew: true
+    //   }
+    // ]
+    // setFiles(newFiles)
+
+
+    const newFile = {
+      id: newId,
+      title: '',
+      body: '## 请输出 Markdown',
+      createdAt: new Date().getTime(),
+      isNew: true
+    }
+    setFiles({...files, [newId]: newFile})
+
   }
 
   return (
@@ -175,7 +207,9 @@ function App() {
                     fileChange(activeFile.id, value)
                   }}
                   options={{
-                    minHeight: '515px'
+                    minHeight: '515px',
+                    autofocus: true,
+                    spellChecker: true,
                   }}
               />
             </>

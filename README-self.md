@@ -254,3 +254,24 @@ App State 分析
 单向数据流
 
 
+## uuid
+
+
+新建文件生成uuid
+
+```
+npm install uuid --save
+```
+
+
+## Flatten State
+
+
+复杂数据结构打平
+
+- 解决数组冗余
+- 数据处理更加方便
+
+
+
+
