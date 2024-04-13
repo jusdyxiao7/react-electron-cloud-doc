@@ -23,15 +23,6 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
     const enterPressed = useKeyPress(13)
     const escPressed = useKeyPress(27)
 
-    let node = useRef(null)
-
-    // input焦点 focus 高亮
-    useEffect(() => {
-        if (editStatus) {
-            node.current.focus()
-        }
-    }, [editStatus])
-
     const closeSearch = (editItem) => {
         // e.preventDefault()
         setEditStatus(false)
@@ -180,7 +171,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                                     onClick={() => onFileClick(file.id)}
                                 >{file.title}
                                 </span>
-                                <button
+                                {/*<button
                                     type="button"
                                     className="icon-button col-1"
                                     onClick={(e) => {
@@ -202,7 +193,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                                         size="lg"
                                         icon={faTrash}
                                     />
-                                </button>
+                                </button>*/}
                             </>
                         )}
                         {
@@ -212,7 +203,6 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                                         <input
                                             className="form-control"
                                             value={value}
-                                            ref={node}
                                             placeholder="请输入文件名称"
                                             onChange={(e) => {
                                                 setValue(e.target.value)

@@ -696,3 +696,154 @@ const menuTemplate = require('./src/menuTemplate')
 const menu = Menu.buildFromTemplate(menuTemplate)
 Menu.setApplicationMenu(menu)
 ```
+
+
+## 设置窗口
+
+
+- 当前应内用设置页面
+- 单独设置窗口
+
+选取弹窗窗口的原因
+1. 不用增加复杂度，相对独立
+2. 配置选项相对简单，不需要任何框架
+3. 可以学习和巩固原生js水平
+
+引用原生html和js文件，就可以正常引用。无需处理es6混合语法的问题
+
+页面HTML文件
+
+```
+<link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="./settings.css">
+    
+<script>
+  require('./settings.js')
+</script>
+```
+
+js头部文件
+
+```
+const { ipcRenderer } = require('electron')
+// 高版本需要安装新依赖，并做相关配置后使用
+const remote = require('@electron/remote')
+
+const Store = require('electron-store')
+const settingsStore = new Store({name: 'Settings'})
+```
+
+
+## 独立抽取一个弹窗组件
+
+
+```
+const { BrowserWindow } = require('electron')
+
+class AppWindow extends BrowserWindow {
+  constructor(config, urlLocation) {
+    const basicConfig = {
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        webSecurity: false,
+        // 解决window.require is not a function 问题
+        contextIsolation: false,
+        enableRemoteModule: true,
+      },
+      show: false,
+      backgroundColor: '#efefef',
+    }
+    const finalConfig = { ...basicConfig, ...config }
+    super(finalConfig)
+    this.loadURL(urlLocation)
+    this.once('ready-to-show', () => {
+      this.show()
+    })
+  }
+}
+
+module.exports = AppWindow
+
+```
+
+
+## main.js中引用调用两个窗口示例
+
+
+支持开启两个窗口的ipc通信
+
+
+```
+const { app, BrowserWindow, Menu, ipcMain } = require('electron')
+const path = require('path')
+
+// 高版本引入 electron-store
+const Store = require('electron-store')
+Store.initRenderer()
+
+// 引入原生菜单
+const menuTemplate = require('./src/menuTemplate')
+const AppWindow = require('./src/AppWindow')
+
+let mainWindow, settingsWindow
+
+const isDev = process.env.NODE_ENV !== 'production'
+
+app.on('ready', () => {
+  const mainWindowConfig = {
+    width: 1440,
+    height: 768,
+  }
+  const urlLocation = isDev ? 'http://localhost:3000' : 'dummyUrl'
+  mainWindow = new AppWindow(mainWindowConfig, urlLocation)
+
+  // mainWindow = new BrowserWindow({
+  //   width: 1440,
+  //   height: 768,
+  //   // frame: false,
+  //   webPreferences: {
+  //     nodeIntegration: true,
+  //     webSecurity: false,
+  //     // 解决window.require is not a function 问题
+  //     contextIsolation: false,
+  //     enableRemoteModule: true,
+  //   }
+  // })
+
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
+
+
+  // hook up main events
+  ipcMain.on('open-settings-window', () => {
+    const settingsWindowConfig = {
+      width: 500,
+      height: 400,
+      parent: mainWindow
+    }
+    const settingsFileLocation = `file://${path.join(__dirname, './settings/settings.html')}`
+    settingsWindow = new AppWindow(settingsWindowConfig, settingsFileLocation)
+    settingsWindow.on('closed', () => {
+      settingsWindow = null
+    })
+
+    // 开启remote模块
+    require('@electron/remote/main').enable(settingsWindow.webContents)
+
+  })
+
+
+  // 开启remote模块
+  require('@electron/remote/main').initialize()
+  require('@electron/remote/main').enable(mainWindow.webContents)
+
+  // mainWindow.loadURL(urlLocation);
+
+  // set menu
+  const menu = Menu.buildFromTemplate(menuTemplate)
+  Menu.setApplicationMenu(menu)
+})
+```

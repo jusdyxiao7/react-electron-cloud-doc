@@ -42,6 +42,7 @@ const Store = window.require('electron-store')
 // console.log(store.get('name'))
 
 const fileStore = new Store({'name': 'Files Data'})
+const settingsStore = new Store({name: 'Settings'})
 
 // 新建、更新、删除时操作即可
 const saveFilesToStore = (files) => {
@@ -73,7 +74,8 @@ function App() {
   const [searchedFiles, setSearchedFiles] = useState([])
 
   // electron保存的路径
-  const saveLocation = remote.app.getPath('documents')
+  const saveLocation = settingsStore.get('savedFileLocation') || remote.app.getPath('documents')
+  // const saveLocation = remote.app.getPath('documents')
   // const saveLocation = 'documents'
 
   const openedFiles = openedFileIds.map(openId => {
