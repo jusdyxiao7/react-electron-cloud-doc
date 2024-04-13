@@ -18,7 +18,7 @@ import fileHelper from "./utils/fileHelper";
 // require node.js modules
 // const fs = window.require('fs')
 // console.dir(fs)
-const {join} = window.require('path')
+const {join, basename, extname, dirname} = window.require('path')
 
 // 低版本中可以正常引入
 // const {remote} = window.require('electron')
@@ -184,18 +184,21 @@ function App() {
     // })
     // setFiles(newFiles)
 
-    const newPath = join(saveLocation, `${title}.md`)
+    // newPath should be different based on isNew
+    // if isNew is false, path should be old dirname + new title
+    const newPath = isNew ? join(saveLocation, `${title}.md`) : join(dirname(files[id].path), `${title}.md`)
     const modifiedFile = { ...files[id], title, isNew: false, path: newPath}
     const newFiles = {...files, [id]: modifiedFile}
 
     if (isNew) {
-      console.log(saveLocation)
+      // console.log(saveLocation)
       fileHelper.writeFile(newPath, files[id].body).then(() => {
         setFiles(newFiles)
         saveFilesToStore(newFiles)
       })
     } else {
-      const oldPath = join(saveLocation, `${files[id].title}.md`)
+      // const oldPath = join(saveLocation, `${files[id].title}.md`)
+      const oldPath = files[id].path
       fileHelper.renameFile(oldPath, newPath).then(() => {
         setFiles(newFiles)
         saveFilesToStore(newFiles)
@@ -235,9 +238,72 @@ function App() {
 
   }
 
+  // 引入导入功能后，原先的保存文件夹就不再适用了
   const saveCurrentFile = () => {
-    fileHelper.writeFile(join(saveLocation, `${activeFile.title}.md`), activeFile.body).then(() => {
+    fileHelper.writeFile(activeFile.path, activeFile.body).then(() => {
       setUnsavedFileIds(unsavedFileIds.filter(id => id !== activeFile.id))
+    })
+    // fileHelper.writeFile(join(saveLocation, `${activeFile.title}.md`), activeFile.body).then(() => {
+    //   setUnsavedFileIds(unsavedFileIds.filter(id => id !== activeFile.id))
+    // })
+  }
+
+  // 原生打开对话框方法
+  const importFiles = () => {
+    remote.dialog.showOpenDialog({
+      title: '选择导入的 Markdown 文件',
+      properties: ['openFile', 'multiSelections'],
+      filters: [
+        {name: 'Markdown files', extensions: ['md']}
+      ]
+    }).then(result => {
+      // console.log(result.canceled)
+      // console.log(result.filePaths)
+      const canceled = result.canceled
+      const paths = result.filePaths
+      if (!canceled && Array.isArray(paths)) {
+        // filter out the path we already have in electron store
+        // ['D:\\My Documents\\123.md', 'D:\\My Documents\\456.md']
+        const filteredPaths = paths.filter(path => {
+          const alreadyAdded = Object.values(files).find(file => {
+            return file.path === path
+          })
+          return !alreadyAdded
+        })
+
+        // console.log(filteredPaths)
+
+        // extend the path array to an array contains files info
+        // [{id: '1', path: '', title: ''}, {}]
+        const importFileArr = filteredPaths.map(path => {
+          return {
+            id: uuidv4(),
+            title: basename(path, extname(path)),
+            path
+          }
+        })
+        // console.log(importFileArr)
+
+        // get the new files object in flattenArr
+        const newFiles = {...files, ...flattenArr(importFileArr)}
+
+        // setState and update electron store
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
+
+        if (importFileArr.length > 0) {
+          remote.dialog.showMessageBox({
+            type: 'info',
+            title: `成功导入了${importFileArr.length}个文件`,
+            message: `成功导入了${importFileArr.length}个文件`,
+          })
+        }
+      } else {
+        console.log('点击了取消')
+      }
+
+    }).catch(err => {
+      console.log(err)
     })
   }
 
@@ -269,6 +335,7 @@ function App() {
                text="导入"
                colorClass="btn-success"
                icon={faFileImport}
+               onBtnClick={importFiles}
               />
             </div>
           </div>
@@ -307,12 +374,12 @@ function App() {
                     spellChecker: true,
                   }}
               />
-              {/*<BottomBtn*/}
-              {/*  text="保存"*/}
-              {/*  colorClass="btn-success"*/}
-              {/*  icon={faSave}*/}
-              {/*  onBtnClick={saveCurrentFile}*/}
-              {/*/>*/}
+              <BottomBtn
+                text="保存"
+                colorClass="btn-success"
+                icon={faSave}
+                onBtnClick={saveCurrentFile}
+              />
             </>
           }
         </div>
