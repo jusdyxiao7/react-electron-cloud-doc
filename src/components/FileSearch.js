@@ -27,6 +27,8 @@ const FileSearch = ({title, onFileSearch}) => {
     // e.preventDefault()
     setInputActive(false)
     setValue('')
+    // 关闭按钮后也要重新搜索
+    onFileSearch('')
   }
 
   // 增加键盘回车和Esc事件

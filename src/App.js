@@ -18,12 +18,83 @@ function App() {
   const [activeFileId, setActiveFileId] = useState('')
   const [openedFileIds, setOpenedFileIds] = useState([])
   const [unsavedFileIds, setUnsavedFileIds] = useState([])
+  const [searchedFiles, setSearchedFiles] = useState([])
 
   const openedFiles = openedFileIds.map(openId => {
     return files.find(file => file.id === openId)
   })
-
   const activeFile = files.find(file => file.id === activeFileId)
+  const fileListArr = (searchedFiles.length > 0) ? searchedFiles : files
+  // console.log(files)
+  // console.log(setSearchedFiles)
+  // console.log(fileListArr)
+
+  const fileClick = (fileId) => {
+    // set current active file
+    setActiveFileId(fileId)
+    // if openedFiles don't have the currentId
+    // then add new fileId to openedFileId
+    if (!openedFileIds.includes(fileId)) {
+      setOpenedFileIds([...openedFileIds, fileId])
+    }
+  }
+
+  const tabClick = (fileId) => {
+    // set current active file
+    setActiveFileId(fileId)
+  }
+
+  const tabClose = (id) => {
+    // remove currentId from openFileIds
+    const tabsWithout = openedFileIds.filter(fileId => fileId !== id)
+    setOpenedFileIds(tabsWithout)
+    // set the active to the first opened tab if still tabs left
+    if (tabsWithout.length > 0) {
+      setActiveFileId(tabsWithout[0])
+    } else {
+      setActiveFileId('')
+    }
+  }
+
+  const fileChange = (id, value) => {
+    // loop through file array to update to new value
+    const newFiles = files.map(file => {
+      if (file.id === id) {
+        file.body = value
+      }
+      return file
+    })
+    setFiles(newFiles)
+    // update unsavedIds
+    if (!unsavedFileIds.includes(id)) {
+      setUnsavedFileIds([...unsavedFileIds, id])
+    }
+  }
+
+  const deleteFile = (id) => {
+    // filter out the current file id
+    const newFiles = files.filter(file => file.id !== id)
+    setFiles(newFiles)
+    // close the tab if opened
+    tabClose(id)
+  }
+
+  const updateFileName = (id, title) => {
+    // loop through files, and update the title
+    const newFiles = files.map(file => {
+      if (file.id === id) {
+        file.title = title
+      }
+      return file
+    })
+    setFiles(newFiles)
+  }
+
+  const fileSearch = (keyword) => {
+    // filter out the new files based on the keyword
+    const newFiles = files.filter(file => file.title.includes(keyword))
+    setSearchedFiles(newFiles)
+  }
 
   return (
     <div className="App container-fluid px-0">
@@ -31,13 +102,13 @@ function App() {
         <div className="col-3 bg-light left-panel ">
           <FileSearch
           title='我的云文档'
-          onFileSearch={(value) => {console.log(value)}}
+          onFileSearch={(keyword) => {fileSearch(keyword)}}
           />
           <FileList
-            files={defaultFiles}
-            onSaveEdit={(id, newValue) => {console.log(id); console.log(newValue);}}
-            onFileClick={(id) => console.log('clicking', id)}
-            onFileDelete={(id) => console.log('deleting', id)}
+            files={fileListArr}
+            onSaveEdit={(id, title) => {updateFileName(id, title)}}
+            onFileClick={(id) => fileClick(id)}
+            onFileDelete={(id) => deleteFile(id)}
           />
           <div className="row g-0 button-group">
             <div className="col">
@@ -70,18 +141,19 @@ function App() {
               <TabList
                   files={openedFiles}
                   onTabClick={(id) => {
-                    console.log(id)
+                    tabClick(id)
                   }}
                   activeId={activeFileId}
                   onCloseTab={(id) => {
-                    console.log('closing ', id)
+                    tabClose(id)
                   }}
                   unSaveIds={unsavedFileIds}
               />
               <SimpleMDE
+                  key={activeFile && activeFile.id}
                   value={activeFile && activeFile.body}
                   onChange={(value) => {
-                    console.log(value)
+                    fileChange(activeFile.id, value)
                   }}
                   options={{
                     minHeight: '515px'
