@@ -362,3 +362,5 @@ const store = new Store()
 store.set('name', 'viking')
 console.log(store.get('name'))
 ```
+
+https://github.com/sindresorhus/electron-store/issues/268

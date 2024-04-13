@@ -78,9 +78,18 @@ function App() {
   // console.log(setSearchedFiles)
   // console.log(fileListArr)
 
+  // 文本内容和状态信息不需要持久化存储到store中
   const fileClick = (fileId) => {
     // set current active file
     setActiveFileId(fileId)
+    const currentFile = files[fileId]
+    if (!currentFile.isLoaded) {
+      fileHelper.readFile(currentFile.path).then(value => {
+        const newFile = {...files[fileId], body: value, isLoaded: true}
+        setFiles({...files, [fileId]: newFile})
+      })
+    }
+
     // if openedFiles don't have the currentId
     // then add new fileId to openedFileId
     if (!openedFileIds.includes(fileId)) {
@@ -129,18 +138,38 @@ function App() {
     }
   }
 
+  // 新增文件直接esc退出会出问题，需要判断中间态文件
   const deleteFile = (id) => {
-    // filter out the current file id
-    fileHelper.deleteFile(files[id].path).then(() => {
-      delete files[id]
-      setFiles(files)
-      saveFilesToStore(files)
+    if (files[id].isNew) {
+      // 优雅写法，除了id以外的所有值 => afterDelete
+      const {[id]: value, ...afterDelete} = files
+      setFiles(afterDelete)
 
-      // const newFiles = files.filter(file => file.id !== id)
-      // setFiles(newFiles)
-      // close the tab if opened
-      tabClose(id)
-    })
+      // delete files[id]
+
+      // 错误写法一
+      // setFiles(files)
+
+      // 修正的写法，但是不推荐
+      // setFiles({...files})
+    } else {
+      // 已经是持久化文件
+      // filter out the current file id
+      fileHelper.deleteFile(files[id].path).then(() => {
+        const {[id]: value, ...afterDelete} = files
+        setFiles(afterDelete)
+        saveFilesToStore(afterDelete)
+
+        // delete files[id]
+        // setFiles({...files})
+        // saveFilesToStore({...files})
+
+        // const newFiles = files.filter(file => file.id !== id)
+        // setFiles(newFiles)
+        // close the tab if opened
+        tabClose(id)
+      })
+    }
   }
 
   const updateFileName = (id, title, isNew) => {
@@ -278,12 +307,12 @@ function App() {
                     spellChecker: true,
                   }}
               />
-              <BottomBtn
-                text="保存"
-                colorClass="btn-success"
-                icon={faSave}
-                onBtnClick={saveCurrentFile}
-              />
+              {/*<BottomBtn*/}
+              {/*  text="保存"*/}
+              {/*  colorClass="btn-success"*/}
+              {/*  icon={faSave}*/}
+              {/*  onBtnClick={saveCurrentFile}*/}
+              {/*/>*/}
             </>
           }
         </div>
