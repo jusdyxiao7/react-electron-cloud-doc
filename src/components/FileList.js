@@ -17,24 +17,28 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
     const enterPressed = useKeyPress(13)
     const escPressed = useKeyPress(27)
 
-    const closeSearch = () => {
+    const closeSearch = (editItem) => {
         // e.preventDefault()
         setEditStatus(false)
         setValue('')
+        // if we are editing a newly crated file, we should delete this file when pressing esc
+        if (editItem.isNew) {
+            onFileDelete(editItem.id)
+        }
     }
 
     // 增加键盘回车和Esc事件
     useEffect(() => {
-
+        const editItem = files.find(file => file.id === editStatus)
         // 使用hooks函数重构精简代码，跟下方等价
-        if (enterPressed && editStatus) {
-            const editItem = files.find(file => file.id === editStatus)
+        // 防止空名称也能保存
+        if (enterPressed && editStatus && value.trim() !== '') {
             onSaveEdit(editItem.id, value)
             setEditStatus(false)
             setValue('')
         }
         if (escPressed && editStatus) {
-            closeSearch()
+            closeSearch(editItem)
         }
 
         // const handleInputEvent = (event) => {
@@ -56,6 +60,15 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         // }
     })
 
+    // 新增按钮的时候保证也是input的状态
+    useEffect(() => {
+        const newFile = files.find(file => file.isNew)
+        console.log(newFile)
+        if (newFile) {
+            setEditStatus(newFile.id)
+            setValue(newFile.title)
+        }
+    }, [files])
 
     return (
         <ul className="list-group list-group-flush file-list">
@@ -65,7 +78,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                         className="list-group-item bg-light d-flex align-items-center row g-0"
                         key={file.id}
                     >
-                        { editStatus !== file.id && (
+                        { (editStatus !== file.id && !file.isNew) && (
                             <>
                                 <span className="col-2">
                                 <FontAwesomeIcon
@@ -104,12 +117,13 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                             </>
                         )}
                         {
-                            editStatus === file.id && (
+                            (editStatus === file.id || file.isNew) && (
                                 <>
                                     <div className="col-10">
                                         <input
                                             className="form-control"
                                             value={value}
+                                            placeholder="请输入文件名称"
                                             onChange={(e) => {
                                                 setValue(e.target.value)
                                             }}
@@ -119,7 +133,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                                     <button
                                         type="button"
                                         className="icon-button col-2"
-                                        onClick={closeSearch}>
+                                        onClick={() => closeSearch(file)}>
                                         <FontAwesomeIcon
                                             title="关闭"
                                             size="lg"

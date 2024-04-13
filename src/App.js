@@ -11,6 +11,7 @@ import TabList from "./components/TabList";
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
 import React, { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid';
 
 function App() {
 
@@ -84,6 +85,8 @@ function App() {
     const newFiles = files.map(file => {
       if (file.id === id) {
         file.title = title
+        // 不设置的话会一直循环调用
+        file.isNew = false
       }
       return file
     })
@@ -94,6 +97,21 @@ function App() {
     // filter out the new files based on the keyword
     const newFiles = files.filter(file => file.title.includes(keyword))
     setSearchedFiles(newFiles)
+  }
+
+  const createNewFile = () => {
+    const newId = uuidv4()
+    const newFiles = [
+        ...files,
+      {
+        id: newId,
+        title: '',
+        body: '## 请输出 Markdown',
+        createdAt: new Date().getTime(),
+        isNew: true
+      }
+    ]
+    setFiles(newFiles)
   }
 
   return (
@@ -116,6 +134,7 @@ function App() {
                text="新建"
                colorClass="btn-primary"
                icon={faPlus}
+               onBtnClick={createNewFile}
               />
             </div>
             <div className="col">
