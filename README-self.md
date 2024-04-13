@@ -274,4 +274,21 @@ npm install uuid --save
 
 
 
+## 解决 window.require() is not a function 问题
 
+
+https://github.com/electron/electron/issues/7300
+
+https://stackoverflow.com/questions/56091343/typeerror-window-require-is-not-a-function/56095485
+
+
+```
+webPreferences: {
+  nodeIntegration: true,
+  webSecurity: false,
+  // 解决window.require is not a function 问题
+  contextIsolation: false
+}
+```
+
+https://github.com/reZach/secure-electron-template
