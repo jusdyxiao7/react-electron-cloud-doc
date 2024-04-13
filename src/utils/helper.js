@@ -13,3 +13,17 @@ export const flattenArr = (arr) => {
 export const objToArr = (obj) => {
   return Object.keys(obj).map(key => obj[key])
 }
+
+export const getParentNode = (node, parentClassName) => {
+  let current = node
+  while (current !== null && current !== undefined && current !== '') {
+    // console.log(current.classList)
+    if (current.classList !== null && current.classList !== undefined && current.classList !== '') {
+      if (current.classList.contains(parentClassName)) {
+        return current
+      }
+    }
+    current = current.parentNode
+  }
+  return false
+}

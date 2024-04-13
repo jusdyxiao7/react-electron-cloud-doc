@@ -9,6 +9,12 @@ import {faEdit, faTrash, faTimes} from '@fortawesome/free-solid-svg-icons'
 import {faMarkdown} from '@fortawesome/free-brands-svg-icons'
 import PropTypes from 'prop-types'
 import useKeyPress from "../hooks/useKeyPress";
+import useContextMenu from "../hooks/useContextMenu";
+import {getParentNode} from "../utils/helper";
+
+// 高版本需要安装新依赖，并做相关配置后使用
+const remote = window.require('@electron/remote')
+const {Menu, MenuItem} = remote
 
 const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
     const [editStatus, setEditStatus] = useState(false)
@@ -63,20 +69,86 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
     // 新增按钮的时候保证也是input的状态
     useEffect(() => {
         const newFile = files.find(file => file.isNew)
-        console.log(newFile)
+        // console.log(newFile)
         if (newFile) {
             setEditStatus(newFile.id)
             setValue(newFile.title)
         }
     }, [files])
 
+
+    // 添加上下文菜单
+    // 使用hooks函数重构
+    const clickedItem = useContextMenu(
+[{
+            label: '打开',
+            click: () => {
+                const parentElement = getParentNode(clickedItem.current, 'file-item')
+                if (parentElement) {
+                    onFileClick(parentElement.dataset.id)
+                }
+                // console.log(parentElement)
+                // console.log(parentElement.dataset)
+                // console.log(parentElement.dataset.id)
+                // console.log('打开 clicking', clickedItem.current)
+            }
+        },
+        {
+            label: '重命名',
+            click: () => {
+                console.log('重命名 clicking', clickedItem.current)
+            }
+        },
+        {
+            label: '删除',
+            click: () => {
+                console.log('删除 clicking', clickedItem.current)
+            }
+        }], '.file-list', [files])
+    // console.log(clickedItem.current)
+
+
+    // useEffect(() => {
+    //     const menu = new Menu()
+    //     menu.append(new MenuItem({
+    //         label: '打开',
+    //         click: () => {
+    //             console.log('打开 clicking')
+    //         }
+    //     }))
+    //     menu.append(new MenuItem({
+    //         label: '重命名',
+    //         click: () => {
+    //             console.log('重命名 clicking')
+    //         }
+    //     }))
+    //     menu.append(new MenuItem({
+    //         label: '删除',
+    //         click: () => {
+    //             console.log('删除 clicking')
+    //         }
+    //     }))
+    //
+    //     const handleContextMenu = (e) => {
+    //       menu.popup({
+    //           window: remote.getCurrentWindow()
+    //       })
+    //     }
+    //     document.addEventListener('contextmenu', handleContextMenu)
+    //     return () => {
+    //         document.removeEventListener('contextmenu', handleContextMenu)
+    //     }
+    // })
+
     return (
         <ul className="list-group list-group-flush file-list">
             {
                 files.map(file => (
                     <li
-                        className="list-group-item bg-light d-flex align-items-center row g-0"
+                        className="file-item list-group-item bg-light d-flex align-items-center row g-0"
                         key={file.id}
+                        data-id={file.id}
+                        data-title={file.title}
                     >
                         { (editStatus !== file.id && !file.isNew) && (
                             <>
