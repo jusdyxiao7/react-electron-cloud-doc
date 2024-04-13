@@ -23,6 +23,15 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
     const enterPressed = useKeyPress(13)
     const escPressed = useKeyPress(27)
 
+    let node = useRef(null)
+
+    // input焦点 focus 高亮
+    useEffect(() => {
+        if (editStatus) {
+            node.current.focus()
+        }
+    }, [editStatus])
+
     const closeSearch = (editItem) => {
         // e.preventDefault()
         setEditStatus(false)
@@ -96,13 +105,21 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
         {
             label: '重命名',
             click: () => {
-                console.log('重命名 clicking', clickedItem.current)
+                const parentElement = getParentNode(clickedItem.current, 'file-item')
+                if (parentElement) {
+                    const { id, title } = parentElement.dataset
+                    setEditStatus(id)
+                    setValue(title)
+                }
             }
         },
         {
             label: '删除',
             click: () => {
-                console.log('删除 clicking', clickedItem.current)
+                const parentElement = getParentNode(clickedItem.current, 'file-item')
+                if (parentElement) {
+                    onFileDelete(parentElement.dataset.id)
+                }
             }
         }], '.file-list', [files])
     // console.log(clickedItem.current)
@@ -166,7 +183,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                                 <button
                                     type="button"
                                     className="icon-button col-1"
-                                    onClick={() => {
+                                    onClick={(e) => {
                                         setEditStatus(file.id);
                                         setValue(file.title)
                                     }}>
@@ -195,6 +212,7 @@ const FileList = ({files, onFileClick, onSaveEdit, onFileDelete}) => {
                                         <input
                                             className="form-control"
                                             value={value}
+                                            ref={node}
                                             placeholder="请输入文件名称"
                                             onChange={(e) => {
                                                 setValue(e.target.value)

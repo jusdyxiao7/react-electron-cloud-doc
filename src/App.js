@@ -10,10 +10,11 @@ import { faPlus, faFileImport, faSave } from '@fortawesome/free-solid-svg-icons'
 import TabList from "./components/TabList";
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid';
 import {flattenArr, objToArr} from "./utils/helper";
 import fileHelper from "./utils/fileHelper";
+import useIpcRenderer from "./hooks/useIpcRenderer";
 
 // require node.js modules
 // const fs = window.require('fs')
@@ -25,8 +26,14 @@ const {join, basename, extname, dirname} = window.require('path')
 
 // 高版本需要安装新依赖，并做相关配置后使用
 const remote = window.require('@electron/remote')
-// const remote = window.require('@electron/remote')
-// console.log(remote)
+
+// 引入ipcRenderer正常
+const {ipcRenderer} = window.require('electron')
+
+console.log(remote)
+console.log(ipcRenderer)
+
+// const
 
 const Store = window.require('electron-store')
 
@@ -128,13 +135,15 @@ function App() {
     // state is immutable
     // files[id].body = value
 
+    // 修正保存时一直修改的问题，如果内容没变化不作处理
+    if (value !== files[id].body) {
+      const newFile = { ...files[id], body: value}
+      setFiles({...files, [id]: newFile})
 
-    const newFile = { ...files[id], body: value}
-    setFiles({...files, [id]: newFile})
-
-    // update unsavedIds
-    if (!unsavedFileIds.includes(id)) {
-      setUnsavedFileIds([...unsavedFileIds, id])
+      // update unsavedIds
+      if (!unsavedFileIds.includes(id)) {
+        setUnsavedFileIds([...unsavedFileIds, id])
+      }
     }
   }
 
@@ -307,6 +316,29 @@ function App() {
     })
   }
 
+  // 接收ipc原生菜单按钮事件
+  useIpcRenderer({
+    'create-new-file': createNewFile,
+    'import-file': importFiles,
+    'save-edit-file': saveCurrentFile,
+    // 'active-file-uploaded': activeFileUploaded,
+    // 'file-downloaded': activeFileDownloaded,
+    // 'files-uploaded': filesUploaded,
+    // 'loading-status': (message, status) => { setLoading(status) }
+  })
+
+
+  // useEffect(() => {
+  //   const callback = () => {
+  //     console.log('hello from menu')
+  //   }
+  //   ipcRenderer.on('create-new-file', callback)
+  //   return () => {
+  //     ipcRenderer.removeListener('create-new-file', callback)
+  //   }
+  // })
+
+
   return (
     <div className="App container-fluid px-0">
       <div className="row g-0">
@@ -374,12 +406,12 @@ function App() {
                     spellChecker: true,
                   }}
               />
-              <BottomBtn
+              {/*<BottomBtn
                 text="保存"
                 colorClass="btn-success"
                 icon={faSave}
                 onBtnClick={saveCurrentFile}
-              />
+              />*/}
             </>
           }
         </div>

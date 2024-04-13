@@ -23,6 +23,10 @@ const FileSearch = ({title, onFileSearch}) => {
 
   let node = useRef(null)
 
+  const startSearch = () => {
+    setInputActive(true)
+  }
+
   const closeSearch = () => {
     // e.preventDefault()
     setInputActive(false)
@@ -76,9 +80,7 @@ const FileSearch = ({title, onFileSearch}) => {
             <button
               type="button"
               className="icon-button"
-              onClick={() => {
-                setInputActive(true)
-              }}
+              onClick={startSearch}
             >
               <FontAwesomeIcon
                 title="搜索"

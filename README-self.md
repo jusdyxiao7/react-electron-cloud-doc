@@ -364,3 +364,335 @@ console.log(store.get('name'))
 ```
 
 https://github.com/sindresorhus/electron-store/issues/268
+
+
+## 上下文菜单
+
+
+1. useContextMenu.js 钩子函数
+
+```
+import {useEffect, useRef} from 'react'
+// 高版本需要安装新依赖，并做相关配置后使用
+const remote = window.require('@electron/remote')
+const {Menu, MenuItem} = remote
+
+// deps 解决 闭包不更新的问题，根据外部传入的依赖项，重新渲染
+const useContextMenu = (itemArr, targetSelector, deps) => {
+    let clickedElement = useRef(null)
+
+    useEffect(() => {
+        const menu = new Menu()
+        itemArr.forEach(item => {
+            menu.append(new MenuItem(item))
+        })
+        const handleContextMenu = (e) => {
+            // only show the context menu on current dom element or targetSelector contains target
+            if (document.querySelector(targetSelector).contains(e.target)) {
+                clickedElement.current = e.target
+                menu.popup({
+                    window: remote.getCurrentWindow()
+                })
+            }
+        }
+        document.addEventListener('contextmenu', handleContextMenu)
+        return () => {
+            document.removeEventListener('contextmenu', handleContextMenu)
+        }
+    }, deps)
+    return clickedElement
+}
+
+export default useContextMenu
+```
+
+2. 根据dom元素找到具体需要添加上下文菜单的区域和菜单点击操作事件
+
+```
+// 添加上下文菜单
+    // 使用hooks函数重构
+    const clickedItem = useContextMenu(
+[{
+    label: '打开',
+    click: () => {
+        const parentElement = getParentNode(clickedItem.current, 'file-item')
+        if (parentElement) {
+            onFileClick(parentElement.dataset.id)
+        }
+        // console.log(parentElement)
+        // console.log(parentElement.dataset)
+        // console.log(parentElement.dataset.id)
+        // console.log('打开 clicking', clickedItem.current)
+    }
+},
+{
+    label: '重命名',
+    click: () => {
+        console.log('重命名 clicking', clickedItem.current)
+    }
+},
+{
+    label: '删除',
+    click: () => {
+        console.log('删除 clicking', clickedItem.current)
+    }
+}], '.file-list', [files])
+```
+
+
+## 原生菜单
+
+
+https://github.com/carter-thaxton/electron-default-menu/blob/master/index.js
+
+
+1. 渲染进程 App.js 引入依赖，并监听函数
+
+```
+// 引入ipcRenderer正常
+const {ipcRenderer} = window.require('electron')
+
+
+// 接收ipc原生菜单按钮事件
+useEffect(() => {
+  const callback = () => {
+    console.log('hello from menu')
+  }
+  ipcRenderer.on('create-new-file', callback)
+  return () => {
+    ipcRenderer.removeListener('create-new-file', callback)
+  }
+})
+```
+
+2. 设置定义的原生菜单模板 menuTemplage.js
+
+```
+const { app, shell, ipcMain } = require('electron')
+const Store = require('electron-store')
+const settingsStore = new Store({ name: 'Settings'})
+
+const qiniuIsConfiged =  ['accessKey', 'secretKey', 'bucketName'].every(key => !!settingsStore.get(key))
+let enableAutoSync = settingsStore.get('enableAutoSync')
+let template = [{
+  label: '文件',
+  submenu: [{
+    label: '新建',
+    accelerator: 'CmdOrCtrl+N',
+    click: (menuItem, browserWindow, event) => {
+      browserWindow.webContents.send('create-new-file')
+    }
+  },{
+    label: '保存',
+    accelerator: 'CmdOrCtrl+S',
+    click: (menuItem, browserWindow, event) => {
+      browserWindow.webContents.send('save-edit-file')
+    }
+  },{
+    label: '搜索',
+    accelerator: 'CmdOrCtrl+F',
+    click: (menuItem, browserWindow, event) => {
+      browserWindow.webContents.send('search-file')
+    }
+  },{
+    label: '导入',
+    accelerator: 'CmdOrCtrl+O',
+    click: (menuItem, browserWindow, event) => {
+      browserWindow.webContents.send('import-file')
+    }
+  }]
+},
+{
+  label: '编辑',
+  submenu: [
+    {
+      label: '撤销',
+      accelerator: 'CmdOrCtrl+Z',
+      role: 'undo'
+    }, {
+      label: '重做',
+      accelerator: 'Shift+CmdOrCtrl+Z',
+      role: 'redo'
+    }, {
+      type: 'separator'
+    }, {
+      label: '剪切',
+      accelerator: 'CmdOrCtrl+X',
+      role: 'cut'
+    }, {
+      label: '复制',
+      accelerator: 'CmdOrCtrl+C',
+      role: 'copy'
+    }, {
+      label: '粘贴',
+      accelerator: 'CmdOrCtrl+V',
+      role: 'paste'
+    }, {
+      label: '全选',
+      accelerator: 'CmdOrCtrl+A',
+      role: 'selectall'
+    }
+  ]
+},
+{
+  label: '云同步',
+  submenu: [{
+    label: '设置',
+    accelerator: 'CmdOrCtrl+,',
+    click: () => {
+      ipcMain.emit('open-settings-window')
+    }
+  }, {
+    label: '自动同步',
+    type: 'checkbox',
+    enabled: qiniuIsConfiged,
+    checked: enableAutoSync,
+    click: () => {
+      settingsStore.set('enableAutoSync', !enableAutoSync)
+    }
+  }, {
+    label: '全部同步至云端',
+    enabled: qiniuIsConfiged,
+    click: () => {
+      ipcMain.emit('upload-all-to-qiniu')
+    }
+  }, {
+    label: '从云端下载到本地',
+    enabled: qiniuIsConfiged,
+    click: () => {
+
+    }
+  }]
+},
+{
+  label: '视图',
+  submenu: [
+    {
+      label: '刷新当前页面',
+      accelerator: 'CmdOrCtrl+R',
+      click: (item, focusedWindow) => {
+        if (focusedWindow)
+          focusedWindow.reload();
+      }
+    },
+    {
+      label: '切换全屏幕',
+      accelerator: (() => {
+        if (process.platform === 'darwin')
+          return 'Ctrl+Command+F';
+        else
+          return 'F11';
+      })(),
+      click: (item, focusedWindow) => {
+        if (focusedWindow)
+          focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
+      }
+    },
+    {
+      label: '切换开发者工具',
+      accelerator: (function() {
+        if (process.platform === 'darwin')
+          return 'Alt+Command+I';
+        else
+          return 'Ctrl+Shift+I';
+      })(),
+      click: (item, focusedWindow) => {
+        if (focusedWindow)
+          focusedWindow.toggleDevTools();
+      }
+    },
+  ]
+},
+{
+  label: '窗口',
+  role: 'window',
+  submenu: [{
+    label: '最小化',
+    accelerator: 'CmdOrCtrl+M',
+    role: 'minimize'
+  }, {
+    label: '关闭',
+    accelerator: 'CmdOrCtrl+W',
+    role: 'close'
+  }]
+},
+{
+  label: '帮助',
+  role: 'help',
+  submenu: [
+    {
+      label: '学习更多',
+      click: () => { shell.openExternal('http://electron.atom.io') }
+    },
+  ]
+},
+]
+
+// macOS 特有的
+if (process.platform === 'darwin') {
+  const name = app.getName()
+  template.unshift({
+    label: name,
+    submenu: [{
+      label: `关于 ${name}`,
+      role: 'about'
+    }, {
+      type: 'separator'
+    }, {
+      label: '设置',
+      accelerator: 'Command+,',
+      click: () => {
+        ipcMain.emit('open-settings-window')
+      }
+    }, {
+      label: '服务',
+      role: 'services',
+      submenu: []
+    }, {
+      type: 'separator'
+    }, {
+      label: `隐藏 ${name}`,
+      accelerator: 'Command+H',
+      role: 'hide'
+    }, {
+      label: '隐藏其它',
+      accelerator: 'Command+Alt+H',
+      role: 'hideothers'
+    }, {
+      label: '显示全部',
+      role: 'unhide'
+    }, {
+      type: 'separator'
+    }, {
+      label: '退出',
+      accelerator: 'Command+Q',
+      click: () => {
+        app.quit()
+      }
+    }]
+  })
+} else {
+  template[0].submenu.push({
+    label: '设置',
+    accelerator: 'Ctrl+,',
+    click: () => {
+      ipcMain.emit('open-settings-window')
+    }
+  })
+}
+
+module.exports = template
+```
+
+3. 主进程中 Main.js 引入依赖，并开启云生菜单
+
+```
+const { Menu } = require('electron')
+
+// 引入原生菜单
+const menuTemplate = require('./src/menuTemplate')
+
+// set menu
+const menu = Menu.buildFromTemplate(menuTemplate)
+Menu.setApplicationMenu(menu)
+```

@@ -3,7 +3,7 @@
  * @开源仓库 $ https://github.com/jusdyxiao7
  * @创建时间 2024/4/12 星期五 上午 8:40
  */
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, Menu } = require('electron')
 
 // 老版本使用下面的方式
 // const isDev = require('electron-is-dev')
@@ -15,6 +15,9 @@ const { app, BrowserWindow } = require('electron')
 // 高版本引入 electron-store
 const Store = require('electron-store')
 Store.initRenderer()
+
+// 引入原生菜单
+const menuTemplate = require('./src/menuTemplate')
 
 let mainWindow = null;
 
@@ -38,4 +41,8 @@ app.on('ready', () => {
   require('@electron/remote/main').enable(mainWindow.webContents)
   const urlLocation = isDev ? 'http://localhost:3000' : 'dummyUrl'
   mainWindow.loadURL(urlLocation);
+
+  // set menu
+  const menu = Menu.buildFromTemplate(menuTemplate)
+  Menu.setApplicationMenu(menu)
 })
