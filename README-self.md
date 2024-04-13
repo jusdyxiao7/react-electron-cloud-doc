@@ -179,3 +179,35 @@ https://docs.fontawesome.com/web/setup/packages
 > main.afc48e79b3c4b64a3404.hot-update.js:36 Warning: Failed prop type: Invalid prop `title` of type `number` supplied to `FileSearch`, expected `string`.
 > at FileSearch (http://localhost:3000/static/js/bundle.js:195:3)
 > at App
+
+
+## 使用 classnames 库
+
+
+```
+npm install classnames --save
+```
+
+动态设置各种样式组合
+
+```
+import classNames from 'classnames'
+
+const fClassName = classNames({
+      'nav-link': true,
+      'active': file.id === activeId
+  })
+```
+
+
+## 安装 node-sass
+
+```
+npm install node-sass --save
+```
+
+安装报错，选择匹配node的正确版本即可
+
+https://www.npmjs.com/package/node-sass
+
+
