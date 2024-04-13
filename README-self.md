@@ -232,3 +232,21 @@ https://github.com/RIP21/react-simplemde-editor
 ```
 npm install --save react-simplemde-editor easymde
 ```
+
+
+## State设计原则
+
+- 最小化 State 原则
+- DRY - Don't Repeat Yourself
+- 有些数据可以根据已有 State 计算得出
+- 使用多个 State 变量
+
+
+App State 分析
+
+1. 文件列表
+2. 搜索后的文件列表
+3. 未保存的文件列表
+4. 已经打开的文件列表
+5. 当前被选中的文件
+
