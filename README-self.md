@@ -874,8 +874,42 @@ npm install qiniu --save
 npm install axios --save
 ```
 
+unix时间戳官网
+
 https://www.unixtimestamp.com/
+
+可视化代码
 
 https://carbon.now.sh/
 
 
+## 打包
+
+
+https://github.com/electron-userland/electron-builder
+
+
+```
+npm install electron-builder --save-dev
+```
+
+探究打包过程和生成文件内容
+
+https://fileinfo.com/extension/asar
+
+```
+npm install -g asar
+asar extract app.asar ./app
+```
+
+自动发布 release
+
+https://www.electron.build/configuration/publish
+
+自动更新
+
+https://www.electron.build/auto-update
+
+```
+npm install electron-updater --save-dev
+```
