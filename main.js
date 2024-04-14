@@ -60,6 +60,8 @@ app.on('ready', () => {
     }
     const settingsFileLocation = `file://${path.join(__dirname, './settings/settings.html')}`
     settingsWindow = new AppWindow(settingsWindowConfig, settingsFileLocation)
+    // 去除windows上的设置窗口的顶部菜单
+    settingsWindow.removeMenu()
     settingsWindow.on('closed', () => {
       settingsWindow = null
     })

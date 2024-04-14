@@ -847,3 +847,30 @@ app.on('ready', () => {
   Menu.setApplicationMenu(menu)
 })
 ```
+
+
+## 网络存储方式
+
+
+- 块存储
+- 文件存储
+- 对象存储
+
+
+### 七牛云优势
+
+1. 中文平台，文档更新及时并且准确
+2. 可以免费体验
+3. 提供丰富的SDK，包括Node.js
+
+https://www.qiniu.com/
+
+https://developer.qiniu.com/sdk#official-sdk
+
+https://developer.qiniu.com/kodo/1289/nodejs
+
+```
+npm install qiniu --save
+npm install axios --save
+```
+
