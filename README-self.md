@@ -1,6 +1,64 @@
 # 个人笔记
 
 
+初始化项目安装依赖报错的解决办法
+
+
+## 安装报错处理办法
+
+node环境 16.14.0
+
+npm版本 8.3.1
+
+首先去除 node-sass 依赖，执行 `npm install` 命令正确安装项目的基本依赖。
+
+然后去除项目中有关 node-sass，sass，sass-loader 相关的依赖，重新当前node版本和npm版本安装适配自己本地开发环境的sass版本进行解析适配
+
+```
+npm install sass --save-dev
+npm install sass-loader --save-dev
+```
+
+
+## 推荐使用 nvm 管理本地 node 的各个版本
+
+
+方便切换各种环境，适配不同node版本开发的项目
+
+npm install 安装报错解决办法
+
+1. 下载安装nvm
+2. 修改settings.txt，配置镜像源如下
+
+
+> node_mirror和npm_mirror是基本的 npm install 安装的通用的配置
+>
+> electron_mirror和electron_builder_binaries_mirror是专门用于electron相关依赖的配置
+
+
+```
+node_mirror: https://npmmirror.com/mirrors/node/
+npm_mirror: https://npmmirror.com/mirrors/npm/
+electron_mirror: https://npmmirror.com/mirrors/electron/
+electron_builder_binaries_mirror: https://npmmirror.com/mirrors/electron-builder-binaries/
+```
+
+执行 `npm config edit` 设置npm镜像源和electron镜像源
+
+```
+npm config edit
+```
+
+目前暂不推荐使用淘宝镜像源
+
+```
+electron_mirror=https://npmmirror.com/mirrors/electron/
+electron_builder_binaries_mirror=https://npmmirror.com/mirrors/electron-builder-binaries/
+sass_binary_site=https://npm.taobao.org/mirrors/node-sass
+```
+
+
+
 ## React 哲学
 
 - 将设计好的UI划分为组件层级
@@ -201,6 +259,59 @@ const fClassName = classNames({
 
 
 ## 安装 node-sass
+
+
+一、本地环境
+
+> node环境 16.14.0
+>
+> npm版本 8.3.1
+
+
+安装报错处理办法
+
+通常会出现很多 ERR 的错误，有关 `python`, `gyp` 等关键字的错误
+
+出现有关 python 等依赖相关的问题，表示本地的 sass 相关的依赖没有正确的安装成功。因为sass是Ruby语言编写的，在Python环境中运行的
+
+常用的解决办法如下：
+
+
+二、解决思路
+
+1. 去除package.json，再次尝试安装看是否成功
+2. 若还是失败，则删除 package.json 文件中有关 sass 的相关依赖，直接去除 sass 的安装，后续手动安装
+3. 安装去除sass依赖后的项目，执行 `npm install`
+4. 其中 npm install 过程中查看是否使用当前 node 的正确版本。若不正确选择正确的路径重新执行即可
+```
+C:\Users\Administrator\AppData\Roaming\nvm\v16.14.0\npm.cmd install node-sass --save-dev
+```
+
+4. 最后补充安装删除掉的 sass 依赖
+
+通常参考的指令如下
+
+```
+# 安装过程中经常出现问题
+npm install node-sass --save
+
+# 后续采用下面的安装方式
+npm install sass --save-dev
+npm install sass-loader --save-dev
+```
+
+三、实操
+
+首先去除 node-sass 依赖，执行 `npm install` 命令正确安装项目的基本依赖。
+
+然后去除项目中有关 node-sass，sass，sass-loader 相关的依赖，重新当前node版本和npm版本安装适配自己本地开发环境的sass版本进行解析适配
+
+```
+npm install sass --save-dev
+npm install sass-loader --save-dev
+```
+
+以下依赖暂时废弃
 
 ```
 npm install node-sass --save
